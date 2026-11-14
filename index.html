@@ -155,4 +155,323 @@ function saveWhatsApp(){localStorage.setItem("f360_wa",$("wa_phone").value.repla
 function openWhatsApp(){let p=($("wa_phone").value||localStorage.getItem("f360_wa")||"").replace(/\D/g,"");if(!p){alert(t("phone"));return}window.open("https://wa.me/"+p+"?text="+encodeURIComponent("Hola, quiero información sobre FinData 360."),"_blank")}
 window.addEventListener("DOMContentLoaded",()=>{["usd","eur","date"].forEach(k=>{let v=localStorage.getItem("f360_fx_"+k);if(v)$("fx_"+k).value=v});let p=localStorage.getItem("f360_wa");if(p)$("wa_phone").value=p;calcRates();calcLump();calcAnnuity();calcGradient("arith");calcGradient("geo")});
 </script>
+ 
+<style>
+/* FINdata 360: modo nocturno y casos reales */
+:root[data-theme="dark"]{
+ --bg:#101923;
+ --card:#1b2937;
+ --ink:#e7edf4;
+ --muted:#a8b6c5;
+ --line:#344556;
+ --shadow:0 8px 24px #00000035;
+}
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] aside{
+ background:var(--bg);
+ color:var(--ink);
+}
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .modulecard{
+ background:var(--card);
+ color:var(--ink);
+ border-color:var(--line);
+}
+:root[data-theme="dark"] .modulecard b,
+:root[data-theme="dark"] .heading h2,
+:root[data-theme="dark"] .section-title,
+:root[data-theme="dark"] .metric strong{
+ color:#f2c94c;
+}
+:root[data-theme="dark"] .navbtn{color:#dce5ed}
+:root[data-theme="dark"] .navbtn:hover,
+:root[data-theme="dark"] .navbtn.active{
+ background:#344556;color:#f2c94c;
+}
+:root[data-theme="dark"] .field label{color:#c4d0dc}
+:root[data-theme="dark"] .field input,
+:root[data-theme="dark"] .field select{
+ background:#263747;color:#fff;border-color:#52677b;
+}
+:root[data-theme="dark"] .formula{
+ background:#263747;color:#dce5ed;
+}
+:root[data-theme="dark"] .notice{
+ background:#443b20;color:#f9e6a5;border-color:#75632e;
+}
+:root[data-theme="dark"] th{background:#263747;color:#dce5ed}
+:root[data-theme="dark"] td{border-color:#344556}
+:root[data-theme="dark"] .secondary{
+ background:#344556;color:#fff;
+}
+:root[data-theme="dark"] .pill{
+ background:#443b20;color:#f9e6a5;
+}
+.theme-toggle{
+ border:1px solid #71869a;
+ border-radius:9px;
+ padding:9px 12px;
+ background:#203e5b;
+ color:white;
+ font-size:17px;
+}
+.case-question{
+ font-size:19px;
+ font-weight:750;
+ margin:12px 0;
+}
+.case-option{
+ display:block;
+ width:100%;
+ text-align:left;
+ padding:14px;
+ margin:9px 0;
+ border:1px solid var(--line);
+ border-radius:10px;
+ background:var(--card);
+ color:var(--ink);
+ cursor:pointer;
+}
+.case-option:hover{border-color:#e6b92f}
+.case-option:disabled{cursor:default;opacity:1}
+.case-feedback{
+ margin-top:16px;
+ padding:16px;
+ border-radius:10px;
+ line-height:1.7;
+}
+.case-correct{background:#e0f5e9;color:#145c39}
+.case-wrong{background:#fbe6e6;color:#842d2d}
+:root[data-theme="dark"] .case-correct{
+ background:#173e30;color:#b8f0d0;
+}
+:root[data-theme="dark"] .case-wrong{
+ background:#482727;color:#ffd0d0;
+}
+.case-score{font-weight:800;color:var(--navy)}
+:root[data-theme="dark"] .case-score{color:#f2c94c}
+</style>
+
+<script>
+/* ===== MODO NOCTURNO ===== */
+(function(){
+ const root=document.documentElement;
+ const saved=localStorage.getItem("f360_theme")||"light";
+ root.dataset.theme=saved;
+
+ const controls=document.querySelector(".top-controls");
+ const themeBtn=document.createElement("button");
+ themeBtn.id="themeToggle";
+ themeBtn.className="theme-toggle";
+ themeBtn.type="button";
+ themeBtn.title="Cambiar modo de visualización";
+ themeBtn.textContent=saved==="dark"?"☀️":"🌙";
+ controls.prepend(themeBtn);
+
+ themeBtn.addEventListener("click",()=>{
+  const next=root.dataset.theme==="dark"?"light":"dark";
+  root.dataset.theme=next;
+  localStorage.setItem("f360_theme",next);
+  themeBtn.textContent=next==="dark"?"☀️":"🌙";
+ });
+})();
+
+/* ===== CASOS REALES ===== */
+(function(){
+ const translations={
+ es:{
+  name:"Casos reales",sub:"Aprende resolviendo situaciones financieras",
+  title:"Aprende con casos reales",
+  intro:"Analiza situaciones financieras, selecciona una respuesta y descubre el procedimiento matemático.",
+  scenario:"Una persona presta $1.000.000 COP durante 2 años, con una tasa de interés compuesto del 2 % mensual. ¿Cuánto dinero deberá recibir al finalizar los 2 años?",
+  options:[
+   "$1.240.000 COP",
+   "$1.608.438 COP",
+   "$1.480.000 COP",
+   "$2.000.000 COP"
+  ],
+  check:"Comprobar respuesta",
+  correct:"¡Correcto! Has identificado el valor futuro del préstamo.",
+  wrong:"Esa no es la respuesta correcta. Revisa el procedimiento y vuelve a intentarlo.",
+  explanation:"Se utiliza interés compuesto porque los intereses de cada mes se suman al capital y generan nuevos intereses en los meses siguientes.",
+  formula:"VF = VP × (1 + i)ⁿ",
+  steps:"Datos: VP = $1.000.000; i = 0,02 mensual; n = 24 meses.",
+  calculation:"VF = 1.000.000 × (1 + 0,02)²⁴",
+  result:"Valor futuro aproximado: $1.608.438 COP.",
+  why:"La tasa es mensual, por eso dos años equivalen a 24 períodos de capitalización.",
+  retry:"Volver a intentar",
+  score:"Respuestas correctas"
+ },
+ en:{
+  name:"Real cases",sub:"Learn by solving financial situations",
+  title:"Learn with real cases",
+  intro:"Analyze financial situations, choose an answer and discover the mathematical method.",
+  scenario:"A person lends COP 1,000,000 for 2 years at 2% monthly compound interest. How much should be received at the end?",
+  options:["COP 1,240,000","COP 1,608,438","COP 1,480,000","COP 2,000,000"],
+  check:"Check answer",correct:"Correct! You identified the future value.",
+  wrong:"That is not correct. Review the calculation and try again.",
+  explanation:"Compound interest adds each month's interest to the principal, generating interest in subsequent months.",
+  formula:"FV = PV × (1 + i)ⁿ",
+  steps:"Data: PV = 1,000,000; i = 0.02 monthly; n = 24 months.",
+  calculation:"FV = 1,000,000 × (1 + 0.02)²⁴",
+  result:"Approximate future value: COP 1,608,438.",
+  why:"The rate is monthly, so two years equal 24 compounding periods.",
+  retry:"Try again",score:"Correct answers"
+ },
+ fr:{
+  name:"Cas réels",sub:"Apprenez avec des situations financières",
+  title:"Apprendre avec des cas réels",
+  intro:"Analysez une situation, choisissez une réponse et découvrez le calcul.",
+  scenario:"Une personne prête 1 000 000 COP pendant 2 ans à un taux composé mensuel de 2 %. Quel montant recevra-t-elle à la fin ?",
+  options:["1 240 000 COP","1 608 438 COP","1 480 000 COP","2 000 000 COP"],
+  check:"Vérifier",correct:"Correct ! Vous avez trouvé la valeur future.",
+  wrong:"Ce n'est pas la bonne réponse. Réessayez.",
+  explanation:"Les intérêts composés ajoutent les intérêts de chaque mois au capital.",
+  formula:"VF = VP × (1 + i)ⁿ",
+  steps:"Données : VP = 1 000 000 ; i = 0,02 mensuel ; n = 24 mois.",
+  calculation:"VF = 1 000 000 × (1 + 0,02)²⁴",
+  result:"Valeur future approximative : 1 608 438 COP.",
+  why:"Deux ans représentent 24 périodes de capitalisation mensuelle.",
+  retry:"Réessayer",score:"Bonnes réponses"
+ },
+ pt:{
+  name:"Casos reais",sub:"Aprenda resolvendo situações financeiras",
+  title:"Aprenda com casos reais",
+  intro:"Analise situações financeiras, escolha uma resposta e descubra o cálculo.",
+  scenario:"Uma pessoa empresta COP 1.000.000 por 2 anos, com juros compostos de 2% ao mês. Quanto receberá ao final?",
+  options:["COP 1.240.000","COP 1.608.438","COP 1.480.000","COP 2.000.000"],
+  check:"Verificar resposta",correct:"Correto! Você identificou o valor futuro.",
+  wrong:"Essa não é a resposta correta. Revise o cálculo e tente novamente.",
+  explanation:"Os juros compostos adicionam os juros de cada mês ao capital.",
+  formula:"VF = VP × (1 + i)ⁿ",
+  steps:"Dados: VP = 1.000.000; i = 0,02 mensal; n = 24 meses.",
+  calculation:"VF = 1.000.000 × (1 + 0,02)²⁴",
+  result:"Valor futuro aproximado: COP 1.608.438.",
+  why:"Dois anos equivalem a 24 períodos de capitalização mensal.",
+  retry:"Tentar novamente",score:"Respostas corretas"
+ }
+ };
+
+ let selected=null,answered=false,score=0;
+ const langSelect=document.getElementById("lang");
+
+ function text(){
+  return translations[langSelect.value]||translations.es;
+ }
+
+ function addModule(){
+  const nav=document.querySelector("aside");
+  const homeGrid=document.querySelector("#home .modulegrid");
+
+  const navBtn=document.createElement("button");
+  navBtn.className="navbtn";
+  navBtn.dataset.view="cases";
+  navBtn.innerHTML='<span class="ico">🧩</span><span id="caseNavName"></span>';
+  nav.appendChild(navBtn);
+  navBtn.addEventListener("click",()=>show("cases"));
+
+  const card=document.createElement("button");
+  card.className="modulecard";
+  card.innerHTML='<span class="moduleicon">🧩</span><span><b id="caseCardName"></b><small id="caseCardSub"></small></span>';
+  card.addEventListener("click",()=>show("cases"));
+  homeGrid.appendChild(card);
+
+  const section=document.createElement("section");
+  section.className="view";
+  section.id="cases";
+  section.innerHTML=`
+   <div class="heading">
+    <div><h2 id="caseTitle"></h2><p id="caseIntro"></p></div>
+    <span class="pill">QUIZ</span>
+   </div>
+   <div class="panel">
+    <h3 id="caseScenario"></h3>
+    <div id="caseOptions"></div>
+    <div class="actions">
+     <button class="btn primary" id="caseCheck" disabled></button>
+     <button class="btn secondary" id="caseRetry" style="display:none"></button>
+    </div>
+    <div id="caseFeedback"></div>
+    <p class="case-score" id="caseScore"></p>
+   </div>
+  `;
+  document.querySelector("main").insertBefore(
+   section,document.querySelector(".footer")
+  );
+
+  const moduleCount=document.querySelector("#home .metric strong");
+  if(moduleCount)moduleCount.textContent="06";
+
+  document.getElementById("caseCheck").addEventListener("click",check);
+  document.getElementById("caseRetry").addEventListener("click",reset);
+  render();
+ }
+
+ function render(){
+  const d=text();
+  document.getElementById("caseNavName").textContent=d.name;
+  document.getElementById("caseCardName").textContent=d.name;
+  document.getElementById("caseCardSub").textContent=d.sub;
+  document.getElementById("caseTitle").textContent=d.title;
+  document.getElementById("caseIntro").textContent=d.intro;
+  document.getElementById("caseScenario").textContent=d.scenario;
+  document.getElementById("caseCheck").textContent=d.check;
+  document.getElementById("caseRetry").textContent=d.retry;
+  document.getElementById("caseScore").textContent=d.score+": "+score;
+  const options=document.getElementById("caseOptions");
+  options.innerHTML="";
+  d.options.forEach((option,index)=>{
+   const b=document.createElement("button");
+   b.className="case-option";
+   b.textContent=String.fromCharCode(65+index)+". "+option;
+   b.disabled=answered;
+   if(selected===index)b.style.borderColor="#e6b92f";
+   b.addEventListener("click",()=>{
+    if(answered)return;
+    selected=index;
+    render();
+   });
+   options.appendChild(b);
+  });
+  document.getElementById("caseCheck").disabled=selected===null||answered;
+ }
+
+ function check(){
+  if(selected===null||answered)return;
+  answered=true;
+  const d=text();
+  const feedback=document.getElementById("caseFeedback");
+  if(selected===1){
+   score++;
+   feedback.className="case-feedback case-correct";
+   feedback.innerHTML="<b>"+d.correct+"</b><br><br>"+
+    d.explanation+"<br><br><b>"+d.formula+"</b><br>"+
+    d.steps+"<br>"+d.calculation+"<br><b>"+d.result+"</b><br>"+d.why;
+  }else{
+   feedback.className="case-feedback case-wrong";
+   feedback.innerHTML="<b>"+d.wrong+"</b><br><br>"+
+    d.explanation+"<br><br><b>"+d.formula+"</b><br>"+
+    d.steps+"<br>"+d.calculation+"<br><b>"+d.result+"</b><br>"+d.why;
+  }
+  document.getElementById("caseRetry").style.display="inline-block";
+  render();
+ }
+
+ function reset(){
+  selected=null;
+  answered=false;
+  document.getElementById("caseFeedback").innerHTML="";
+  document.getElementById("caseFeedback").className="";
+  document.getElementById("caseRetry").style.display="none";
+  render();
+ }
+
+ document.addEventListener("DOMContentLoaded",addModule);
+ langSelect.addEventListener("change",()=>{
+  if(document.getElementById("cases"))render();
+ });
+})();
+</script>
+
 </body></html>
